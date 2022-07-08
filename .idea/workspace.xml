@@ -2,19 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d6059961-f24b-4d40-b331-33fee8520edd" name="Changes" comment=".">
-      <change afterPath="$PROJECT_DIR$/04 Telegram bots/01 Find word game/.idea/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/04 Telegram bots/01 Find word game/.idea/5 Телебот. Игра в слова.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/04 Telegram bots/01 Find word game/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/04 Telegram bots/01 Find word game/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/04 Telegram bots/01 Find word game/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/04 Telegram bots/01 Find word game/Other/5symbols.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/04 Telegram bots/01 Find word game/Other/all.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/04 Telegram bots/01 Find word game/Other/find5symbols.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/04 Telegram bots/01 Find word game/README.MD" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/04 Telegram bots/README.MD" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -91,7 +80,21 @@
       <option name="project" value="LOCAL" />
       <updated>1656913220981</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary=".">
+      <created>1657258289030</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1657258289030</updated>
+    </task>
+    <task id="LOCAL-00003" summary=".">
+      <created>1657258315704</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1657258315704</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
