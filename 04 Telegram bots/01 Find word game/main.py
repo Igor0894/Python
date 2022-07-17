@@ -10,7 +10,15 @@ import schedule
 import random
 import wikipedia
 
-token = '' #here is bot token
+def load_token():
+    global token
+    f = open('token.txt')
+    try:
+        token = f.readlines()[0]
+    finally:
+        f.close()
+
+load_token()
 bot = telebot.TeleBot(token)
 chats_id = []
 games = []
@@ -32,7 +40,7 @@ def write_new_chat_id(chat_id):
         if chat_id not in chats_id:
             f.write(str(chat_id) + '\n')
             chats_id.append(int(chat_id))
-            bot.send_message(chat_id, 'Вы добавлены в игру как новый пользователь.')
+            bot.send_message(chat_id, 'Вы добавлены в игру как новый пользователь.', reply_markup=types.ReplyKeyboardRemove())
     finally:
         f.close()
 
@@ -52,8 +60,8 @@ class Game():
     def __init__(self, chat_id, need_ask_ready):
         self.need_ask_ready = need_ask_ready
         self.chat_id = chat_id
-        self.ask = 'Отгадайте слово из 5 букв'
-        self.variables = ['Готов', 'Не сейчас']
+        self.ask = 'Готовы играть?'
+        self.variables = ['Готов','Не сейчас']
         self.reply_wait = False
         self.playing = False
         self.player_word = '*****'
@@ -64,9 +72,10 @@ class Game():
         self.count_find_symbols = 0
         self.tries = 0
         self.hint = ''
+        self.last_answer_time = datetime.datetime.now()
 
     def generate_word(self):
-        f = open('words.txt')
+        f = open('./words.txt', encoding='utf8', errors='ignore')
         try:
             words = f.readlines()
             line = random.randint(0, len(words))
@@ -78,6 +87,7 @@ class Game():
     def find_hint(self):
         wikipedia.set_lang("ru")
         try:
+            self.hint = ""
             big_hint = wikipedia.summary(self.word)
             #print(big_hint)
             start_hint = False
@@ -91,19 +101,21 @@ class Game():
                     end_hint = True
         except:
             self.hint = 'Не удалось загрузить подсказку.'
+            self.generate_word()
+            self.find_hint()
 
     def start_game(self):
         self.generate_word()
         self.find_hint()
         #bot.send_message(self.chat_id, 'Начнём игру! Слово состоит из 5 букв. Слово: ' + self.word + ' Подсказка: ' + self.hint)
-        bot.send_message(self.chat_id, 'Начнём игру! Слово состоит из 5 букв.' + ' Подсказка: ' + self.hint)
+        bot.send_message(self.chat_id, 'Начнём игру! Слово состоит из 5 букв.' + ' Подсказка: ' + self.hint, reply_markup=types.ReplyKeyboardRemove())
         self.playing = True
         self.reply_wait = True
 
     def asking(self):
         if self.need_ask_ready:
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
             for i in self.variables:
-                markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
                 item1 = types.KeyboardButton(i)
                 markup.add(item1)
             bot.send_message(self.chat_id, self.ask, reply_markup=markup)
@@ -139,16 +151,19 @@ class Game():
 
     def replying(self, message):
         if message.text in self.variables and not self.playing:
-            if self.ask == 'Отгадайте слово из 5 букв':
+            if self.ask == 'Готовы играть?':
                 if message.text == 'Готов':
                     self.start_game()
                 else:
-                    bot.send_message(self.chat_id, 'До встречи!')
+                    bot.send_message(self.chat_id, 'До встречи!', reply_markup=types.ReplyKeyboardRemove())
                     delete_game(self.chat_id)
         elif self.playing:
             self.tries += 1
+            '''print('Разница во времени = ' + str(datetime.datetime.now() - self.last_answer_time))
+            print(datetime.time(minute=10))'''
+            self.last_answer_time = datetime.datetime.now()
             if len(message.text) != 5:
-                bot.send_message(self.chat_id, 'Ошибка! Слово должно состоять из 5 строчных букв.')
+                bot.send_message(self.chat_id, 'Ошибка! Слово должно состоять из 5 строчных букв.', reply_markup=types.ReplyKeyboardRemove())
                 self.reply_wait = True
             else:
                 word_from_gamer = message.text.lower()
@@ -178,18 +193,18 @@ class Game():
                         answer = 'Не угадано ни одной новой буквы. Отгаданная часть слова: *[' + self.player_word + ']* , так же в слове присутствуют буквы: *' + new_symb_on_else_pos_str + '*'
                 else:
                     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-                    for i in ['/Новая_игра']:
+                    '''for i in ['/Новая_игра']:
                         item1 = types.KeyboardButton(i)
-                        markup.add(item1)
+                        markup.add(item1)'''
                     answer = 'Поздравляю! Вы угадали слово! С ' + str(self.tries) + ' попытки.'
                     self.playing = False
-                    bot.send_message(self.chat_id, answer, reply_markup=markup)
+                    #bot.send_message(self.chat_id, answer, reply_markup=markup)
+                    bot.send_message(self.chat_id, answer, reply_markup=types.ReplyKeyboardRemove())
                     delete_game(self.chat_id)
                     return
-                #print(answer)
-                #bot.send_message(self.chat_id, answer)
                 if self.playing:
-                    bot.send_message(self.chat_id, answer, parse_mode='MarkdownV2')
+                    answer = answer.replace(".","\.")
+                    bot.send_message(self.chat_id, answer, parse_mode='MarkdownV2', reply_markup=types.ReplyKeyboardRemove())
                     self.reply_wait = True
 
 
@@ -200,20 +215,18 @@ def add_game(chat_id, need_ask_ready):
     new_game.asking()
 
 def start_schedule():  # Запуск schedule
-    ######Параметры для schedule######
-    schedule.every().day.at("08:00").do(auto_ask_to_add_game)
-    #schedule.every(10).seconds.do(ask_new_world)
-        ##################################
+    schedule.every(1).day.at("08:00").do(auto_ask_to_add_game)
+    #schedule.every(10).seconds.do(auto_ask_to_add_game)
     while True:  # Запуск цикла
         schedule.run_pending()
         time.sleep(1)
 
-    ####Функции для выполнения заданий по времени
-
 def auto_ask_to_add_game():
     global chats_id
     for chat_id in chats_id:
-        if not find_game_running_chat(chat_id)[0]:
+        [find, game] = find_game_running_chat(chat_id)
+        if not find or ((datetime.datetime.now() - game.last_answer_time) > datetime.timedelta(minutes=10)):
+            delete_game(chat_id)
             add_game(chat_id, True)
 
 def find_game_running_chat(chat_id):
@@ -223,18 +236,18 @@ def find_game_running_chat(chat_id):
             return [True, games[i]]
     return [False, None]
 
-@bot.message_handler(commands=['Подписка'])
+@bot.message_handler(commands=['start'])
 def start_message(message):
-    bot.send_message(message.chat.id, 'Добро пожаловать!')
+    bot.send_message(message.chat.id, 'Добро пожаловать!', reply_markup=types.ReplyKeyboardRemove())
     write_new_chat_id(message.chat.id)
 
-@bot.message_handler(commands=['Новая_игра'])
+@bot.message_handler(commands=['new_game'])
 def start_message(message):
     [find_game, game] = find_game_running_chat(message.chat.id)
     if not find_game:
         add_game(message.chat.id, False)
     else:
-        bot.send_message(message.chat.id, 'Вы не угадали слово: *' + game.word + '*', parse_mode='MarkdownV2')
+        bot.send_message(message.chat.id, 'Вы не угадали слово: *' + game.word + '*', parse_mode='MarkdownV2', reply_markup=types.ReplyKeyboardRemove())
         delete_game(message.chat.id)
         add_game(message.chat.id, False)
 
@@ -248,12 +261,13 @@ def message_reply(message):
 if __name__ == '__main__':
     load_existing_chats_id()
     start_schedule_process()
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    '''markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     for i in ['/Подписка','/Новая_игра']:
         item1 = types.KeyboardButton(i)
-        markup.add(item1)
+        markup.add(item1)'''
     for chat_id in chats_id:
-        bot.send_message(chat_id, 'Запуск бота', reply_markup=markup)
+        bot.send_message(chat_id, 'Запуск бота', reply_markup=types.ReplyKeyboardRemove())
+        #bot.send_message(chat_id, 'Запуск бота')
     try:
         #bot.polling(none_stop=True)
         bot.infinity_polling(timeout=10, long_polling_timeout = 5)
